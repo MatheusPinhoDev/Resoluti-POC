@@ -37,6 +37,7 @@ export interface DivConfig {
   shadowSpread: string;
   shadowOffsetX: string;
   shadowOffsetY: string;
+  dropPosition: string;
 }
 
 export interface TitleConfig {
@@ -110,6 +111,28 @@ const PropertyPanel: FC<PropertyPanelProps> = ({
     }
   }, [selectedComponent]);
 
+  useEffect(() => {
+    if (divConfig) {
+      const paddingMatch = divConfig.padding?.match(/(\d+)px\s+(\d+)px\s+(\d+)px\s+(\d+)px/);
+      const marginMatch = divConfig.margin?.match(/(\d+)px\s+(\d+)px\s+(\d+)px\s+(\d+)px/);
+
+      setSpacingValues({
+        padding: {
+          top: paddingMatch?.[1] || '0',
+          right: paddingMatch?.[2] || '0',
+          bottom: paddingMatch?.[3] || '0',
+          left: paddingMatch?.[4] || '0',
+        },
+        margin: {
+          top: marginMatch?.[1] || '0',
+          right: marginMatch?.[2] || '0',
+          bottom: marginMatch?.[3] || '0',
+          left: marginMatch?.[4] || '0',
+        }
+      });
+    }
+  }, [divConfig]);
+
   const handleConfigChange = (field: keyof DivConfig, value: string | number) => {
     onConfigUpdate({
       ...divConfig,
@@ -169,7 +192,7 @@ const PropertyPanel: FC<PropertyPanelProps> = ({
         gridTemplateColumns: 'repeat(3, 1fr)',
         gap: '4px',
         width: '120px',
-        margin: '0 auto'
+        margin: '0'
       }}>
         {/* Top */}
         <div />

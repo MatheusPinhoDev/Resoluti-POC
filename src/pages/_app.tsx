@@ -38,20 +38,26 @@ const SidebarWrapper = styled.div`
 const ContentArea = styled.div`
   flex: 1;
   padding: 20px;
+  overflow-x: auto;
   overflow-y: auto;
   min-height: 100%;
+  width: 100%;
 `;
 
 const DesignerArea = styled.div`
   flex: 1;
   height: 100%;
   padding: 20px;
+  text-align: left;
+  font-size: 0;
+  & > * {
+    font-size: 1rem;
+  }
 `;
 
 const PreviewDiv = styled.div<{ config: DivConfig; isChild?: boolean }>`
-  width: ${props => props.isChild 
-    ? `${(props.config.cols / 12) * 100}%`
-    : `${(props.config.cols / 12) * 100}%`};
+  width: ${props => `${(props.config.cols / 12) * 100}%`};
+  min-width: fit-content;
   height: ${props => props.config.height};
   background-color: ${props => props.config.backgroundColor};
   border-style: ${props => props.config.borderStyle};
@@ -60,10 +66,11 @@ const PreviewDiv = styled.div<{ config: DivConfig; isChild?: boolean }>`
   border-radius: ${props => props.config.borderRadius};
   padding: ${props => props.config.padding || '0'};
   margin: ${props => props.config.margin || '0'};
-  display: ${props => props.config.display || 'block'};
+  display: inline-flex;
   position: relative;
   box-sizing: border-box;
   min-height: 50px;
+  flex-shrink: 0;
 `;
 
 const PropertyPanelContainer = styled.div`
@@ -141,7 +148,8 @@ function App() {
     shadowBlur: '0',
     shadowSpread: '0',
     shadowOffsetX: '0',
-    shadowOffsetY: '0'
+    shadowOffsetY: '0',
+    dropPosition: 'beside'
   });
   const [components, setComponents] = useState<DivComponent[]>([]);
   const [selectedDivId, setSelectedDivId] = useState<string | null>(null);
@@ -167,79 +175,110 @@ function App() {
     setCurrentIndex(newHistory.length - 1);
   };
 
+  
+
   const handleDrop = (e: React.DragEvent, parentId?: string) => {
     e.preventDefault();
     const componentType = e.dataTransfer.getData('componentType');
     
     if (componentType === 'div' && selectedComponent === 'div') {
-      // Converte a altura de px para % no novo div
-      const newDivConfig = {
-        ...divConfigs,
-        height: divConfigs.height.includes('px') 
-          ? `${parseFloat(divConfigs.height)}%` 
-          : divConfigs.height
-      };
-
+      const mouseX = e.clientX;
+      
       const newDiv: DivComponent = {
         id: `div-${Date.now()}`,
-        config: newDivConfig,
+        config: {
+          ...divConfigs,
+          cols: 6,
+          height: parentId ? '100%' : '200px',
+          backgroundColor: '#e0e0e0',
+          padding: '10px',
+          margin: '5px',
+        },
         children: []
       };
-      
-      if (parentId) {
-        const findParentDiv = (components: DivComponent[]): DivComponent | null => {
-          for (const comp of components) {
-            if (comp.id === parentId) return comp;
-            if (comp.children) {
-              const found = findParentDiv(comp.children);
-              if (found) return found;
+
+      setComponents(prev => {
+        // Para drops na área principal (divs pais)
+        if (!parentId) {
+          let insertIndex = prev.length;
+          const containers = document.querySelectorAll(`#designer-area > [id^="div-"]`);
+          
+          for (let i = 0; i < containers.length; i++) {
+            const rect = containers[i].getBoundingClientRect();
+            if (mouseX < rect.right) {
+              insertIndex = i;
+              break;
             }
           }
-          return null;
-        };
-
-        const parentDiv = findParentDiv(components);
-
-        if (parentDiv) {
-          setComponents(prev => {
-            const updateChildren = (components: DivComponent[]): DivComponent[] => {
-              return components.map(comp => {
-                if (comp.id === parentId) {
-                  const newChildren = [...(comp.children || []), newDiv];
-                  const { requiredHeight, requiredCols } = calculateRequiredSpace(newChildren);
-
-                  // Atualiza as dimensões do pai usando porcentagem
-                  return {
-                    ...comp,
-                    config: {
-                      ...comp.config,
-                      height: `${requiredHeight}%`,
-                      cols: Math.min(12, requiredCols)
-                    },
-                    children: newChildren
-                  };
-                }
-                if (comp.children) {
-                  return {
-                    ...comp,
-                    children: updateChildren(comp.children)
-                  };
-                }
-                return comp;
-              });
-            };
-            const newComponents = updateChildren(prev);
-            addToHistory(newComponents);
-            return newComponents;
-          });
-        }
-      } else {
-        setComponents(prev => {
-          const newComponents = [...prev, newDiv];
+          
+          const newComponents = [...prev];
+          newComponents.splice(insertIndex, 0, newDiv);
           addToHistory(newComponents);
           return newComponents;
-        });
-      }
+        }
+
+        // Para drops dentro de divs existentes (divs filhas)
+        const updateComponents = (components: DivComponent[]): DivComponent[] => {
+          return components.map(comp => {
+            if (comp.id === parentId) {
+              const children = comp.children || [];
+              let insertIndex = children.length;
+              
+              const childContainers = document.querySelectorAll(`#${parentId} > div > [id^="div-"]`);
+              for (let i = 0; i < childContainers.length; i++) {
+                const rect = childContainers[i].getBoundingClientRect();
+                if (mouseX < rect.right) {
+                  insertIndex = i;
+                  break;
+                }
+              }
+
+              // Calcula o novo número de colunas para cada div filha
+              const totalChildren = children.length + 1;
+              const colsPerChild = Math.floor(12 / totalChildren);
+              
+              // Atualiza as colunas de todas as divs filhas
+              const updatedChildren = children.map(child => ({
+                ...child,
+                config: {
+                  ...child.config,
+                  cols: colsPerChild
+                }
+              }));
+
+              // Adiciona a nova div com o mesmo número de colunas
+              const newChildDiv = {
+                ...newDiv,
+                config: {
+                  ...newDiv.config,
+                  cols: colsPerChild,
+                  height: '100%',
+                }
+              };
+
+              updatedChildren.splice(insertIndex, 0, newChildDiv);
+              
+              return {
+                ...comp,
+                children: updatedChildren
+              };
+            }
+            
+            if (comp.children) {
+              return {
+                ...comp,
+                children: updateComponents(comp.children)
+              };
+            }
+            
+            return comp;
+          });
+        };
+
+        const newComponents = updateComponents(prev);
+        addToHistory(newComponents);
+        return newComponents;
+      });
     }
   };
 

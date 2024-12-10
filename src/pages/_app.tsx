@@ -263,7 +263,7 @@ function App() {
         config: {
           ...divConfigs,
           cols: 12,
-          height: parentId ? '30%' : '30%',
+          height: '30%',
           backgroundColor: '#e0e0e0',
           padding: '10px',
           margin: '5px',
@@ -326,7 +326,7 @@ function App() {
                 config: {
                   ...newDiv.config,
                   cols: colsPerChild,
-                  height: '100%',
+                  height: '30%',
                 }
               };
 

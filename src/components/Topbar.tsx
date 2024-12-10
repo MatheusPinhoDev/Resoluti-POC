@@ -1,7 +1,6 @@
 import { FC } from 'react';
 import { FaPaintBrush, FaEye, FaCode, FaUndo, FaRedo, FaEraser, FaCopy } from 'react-icons/fa';
 import { TopBarContainer, NavButton } from './TopBar.styles';
-import { DivComponent } from './DivContainer';
 
 interface TopBarProps {
   activeView: string;

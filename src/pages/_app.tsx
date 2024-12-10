@@ -477,17 +477,21 @@ function App() {
         onClear={handleClear}
       />
       <MainContent>
-        <SidebarWrapper>
-          <Sidebar 
-            onSelectComponent={handleComponentSelect} 
-            setComponents={setComponents}
-            setSelectedDivId={setSelectedDivId}
-          />
-        </SidebarWrapper>
+        {activeView !== 'preview' && (
+          <SidebarWrapper>
+            <Sidebar 
+              onSelectComponent={handleComponentSelect} 
+              setComponents={setComponents}
+              setSelectedDivId={setSelectedDivId}
+            />
+          </SidebarWrapper>
+        )}
+        
         <ContentArea>
           {renderContent()}
         </ContentArea>
-        {selectedComponent && (
+  
+        {selectedComponent && activeView !== 'preview' && (
           <PropertyPanelContainer>
             <PropertyPanel 
               selectedComponent={selectedComponent}

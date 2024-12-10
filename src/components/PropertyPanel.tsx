@@ -62,6 +62,13 @@ interface SpacingValues {
   left: string;
 }
 
+interface BorderValues {
+  top: string;
+  right: string;
+  bottom: string;
+  left: string;
+}
+
 interface PropertyGroupProps {
   isCollapsed?: boolean;
   children: React.ReactNode;
@@ -97,6 +104,12 @@ const PropertyPanel: FC<PropertyPanelProps> = ({
       left: '0'
     }
   });
+  const [borderValues, setBorderValues] = useState<BorderValues>({
+    top: '0',
+    right: '0',
+    bottom: '0',
+    left: '0'
+  });
 
   const toggleSection = (section: string) => {
     setCollapsedSections(prev => ({
@@ -115,6 +128,7 @@ const PropertyPanel: FC<PropertyPanelProps> = ({
     if (divConfig) {
       const paddingMatch = divConfig.padding?.match(/(\d+)px\s+(\d+)px\s+(\d+)px\s+(\d+)px/);
       const marginMatch = divConfig.margin?.match(/(\d+)px\s+(\d+)px\s+(\d+)px\s+(\d+)px/);
+      const borderMatch = divConfig.borderWidth?.match(/(\d+)px\s+(\d+)px\s+(\d+)px\s+(\d+)px/);
 
       setSpacingValues({
         padding: {
@@ -129,6 +143,13 @@ const PropertyPanel: FC<PropertyPanelProps> = ({
           bottom: marginMatch?.[3] || '0',
           left: marginMatch?.[4] || '0',
         }
+      });
+
+      setBorderValues({
+        top: borderMatch?.[1] || '0',
+        right: borderMatch?.[2] || '0',
+        bottom: borderMatch?.[3] || '0',
+        left: borderMatch?.[4] || '0'
       });
     }
   }, [divConfig]);
@@ -152,6 +173,17 @@ const PropertyPanel: FC<PropertyPanelProps> = ({
 
     const spacingString = `${newValues[type].top}px ${newValues[type].right}px ${newValues[type].bottom}px ${newValues[type].left}px`;
     handleConfigChange(type, spacingString);
+  };
+
+  const handleBorderChange = (side: keyof BorderValues, value: string) => {
+    const newValues = {
+      ...borderValues,
+      [side]: value
+    };
+    setBorderValues(newValues);
+
+    const borderString = `${newValues.top}px ${newValues.right}px ${newValues.bottom}px ${newValues.left}px`;
+    handleConfigChange('borderWidth', borderString);
   };
 
   const renderSpacingControl = () => (
@@ -240,6 +272,58 @@ const PropertyPanel: FC<PropertyPanelProps> = ({
         <div />
       </div>
     </>
+  );
+
+  const renderBorderControl = () => (
+    <div style={{ 
+      display: 'grid', 
+      gridTemplateColumns: 'repeat(3, 1fr)',
+      gap: '4px',
+      width: '120px',
+      margin: '0'
+    }}>
+      <div />
+      <PropertyInput
+        type="number"
+        value={borderValues.top}
+        onChange={(e) => handleBorderChange('top', e.target.value)}
+        style={{ width: '40px', fontSize: '12px', textAlign: 'center' }}
+        min="0"
+      />
+      <div />
+
+      <PropertyInput
+        type="number"
+        value={borderValues.left}
+        onChange={(e) => handleBorderChange('left', e.target.value)}
+        style={{ width: '40px', fontSize: '12px', textAlign: 'center' }}
+        min="0"
+      />
+      <div style={{ 
+        border: '1px solid #ddd',
+        height: '40px',
+        width: '40px',
+        margin: '0 auto',
+        backgroundColor: '#f5f5f5'
+      }} />
+      <PropertyInput
+        type="number"
+        value={borderValues.right}
+        onChange={(e) => handleBorderChange('right', e.target.value)}
+        style={{ width: '40px', fontSize: '12px', textAlign: 'center' }}
+        min="0"
+      />
+
+      <div />
+      <PropertyInput
+        type="number"
+        value={borderValues.bottom}
+        onChange={(e) => handleBorderChange('bottom', e.target.value)}
+        style={{ width: '40px', fontSize: '12px', textAlign: 'center' }}
+        min="0"
+      />
+      <div />
+    </div>
   );
 
   if (!selectedComponent) {
@@ -386,12 +470,7 @@ const PropertyPanel: FC<PropertyPanelProps> = ({
                 />
 
                 <PropertyLabel>Espessura da Borda</PropertyLabel>
-                <PropertyInput 
-                  type="text" 
-                  value={divConfig.borderWidth}
-                  onChange={(e) => handleConfigChange('borderWidth', e.target.value)}
-                  placeholder="Ex: 1px"
-                />
+                {renderBorderControl()}
 
                 <PropertyLabel>Arredondamento</PropertyLabel>
                 <PropertyInput 

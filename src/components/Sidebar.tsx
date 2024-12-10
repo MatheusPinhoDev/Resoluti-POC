@@ -12,11 +12,21 @@ import { DivComponent } from './DivContainer';
 interface SidebarProps {
   onSelectComponent: (component: string) => void;
   setComponents: React.Dispatch<React.SetStateAction<DivComponent[]>>;
+  setSelectedDivId: (id: string | null) => void;
 }
 
-const Sidebar: FC<SidebarProps> = ({ onSelectComponent, setComponents }) => {
+const Sidebar: FC<SidebarProps> = ({ 
+  onSelectComponent, 
+  setComponents, 
+  setSelectedDivId 
+}) => {
   const handleDragStart = (e: React.DragEvent, componentType: string) => {
     e.dataTransfer.setData('componentType', componentType);
+  };
+
+  const handleComponentClick = (componentType: string) => {
+    setSelectedDivId(null);
+    onSelectComponent(componentType);
   };
 
   return (
@@ -24,7 +34,7 @@ const Sidebar: FC<SidebarProps> = ({ onSelectComponent, setComponents }) => {
       <MenuButton 
         draggable
         onDragStart={(e) => handleDragStart(e, 'div')}
-        onClick={() => onSelectComponent('div')}
+        onClick={() => handleComponentClick('div')}
       >
         <FaAlignLeft />
         <span>Div</span>
@@ -33,23 +43,23 @@ const Sidebar: FC<SidebarProps> = ({ onSelectComponent, setComponents }) => {
       <MenuButton 
         draggable
         onDragStart={(e) => handleDragStart(e, 'title')}
-        onClick={() => onSelectComponent('title')}
+        onClick={() => handleComponentClick('title')}
       >
         <FaFont />
         <span>Título</span>
       </MenuButton>
 
-      <MenuButton onClick={() => onSelectComponent('paragraph')}>
+      <MenuButton onClick={() => handleComponentClick('paragraph')}>
         <FaParagraph />
         <span>Parágrafo</span>
       </MenuButton>
 
-      <MenuButton onClick={() => onSelectComponent('input')}>
+      <MenuButton onClick={() => handleComponentClick('input')}>
         <FaKeyboard />
         <span>Input</span>
       </MenuButton>
 
-      <MenuButton onClick={() => onSelectComponent('select')}>
+      <MenuButton onClick={() => handleComponentClick('select')}>
         <FaListUl />
         <span>Select</span>
       </MenuButton>

@@ -33,6 +33,24 @@ const SidebarWrapper = styled.div`
   overflow: hidden;
   background-color: #f5f5f5;
   z-index: 10;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+
+  > * {
+    overflow-y: auto;
+    overflow-x: hidden;
+    flex: 1;
+  }
+  
+  &::-webkit-scrollbar {
+    width: 8px;
+  }
+  
+  &::-webkit-scrollbar-thumb {
+    background-color: #888;
+    border-radius: 4px;
+  }
 `;
 
 const ContentArea = styled.div`
@@ -78,9 +96,25 @@ const PropertyPanelContainer = styled.div`
   position: sticky;
   top: 0;
   height: 100vh;
-  overflow: hidden;
   background-color: #f5f5f5;
   z-index: 10;
+  box-sizing: border-box;
+  
+  > * {
+    height: auto;
+    min-height: 0;
+    overflow-y: auto;
+    overflow-x: hidden;
+  }
+  
+  &::-webkit-scrollbar {
+    width: 8px;
+  }
+  
+  &::-webkit-scrollbar-thumb {
+    background-color: #888;
+    border-radius: 4px;
+  }
 `;
 
 const renderPreviewComponent = (component: DivComponent) => {
@@ -305,6 +339,7 @@ function App() {
 
   const handleDivClick = (id: string) => {
     setSelectedDivId(id);
+    setSelectedComponent('div');
     
     const findDiv = (components: DivComponent[]): DivComponent | undefined => {
       for (const comp of components) {
@@ -437,6 +472,7 @@ function App() {
           <Sidebar 
             onSelectComponent={handleComponentSelect} 
             setComponents={setComponents}
+            setSelectedDivId={setSelectedDivId}
           />
         </SidebarWrapper>
         <ContentArea>

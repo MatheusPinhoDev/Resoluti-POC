@@ -33,7 +33,7 @@ const SidebarWrapper = styled.div`
   overflow: hidden;
   background-color: #f5f5f5;
   z-index: 10;
-  box-sizing: border-box;
+    box-sizing: border-box;
   display: flex;
   flex-direction: column;
 
@@ -73,22 +73,27 @@ const DesignerArea = styled.div`
   }
 `;
 
-const PreviewDiv = styled.div<{ config: DivConfig; isChild?: boolean }>`
-  width: ${props => `${(props.config.cols / 12) * 100}%`};
-  min-width: fit-content;
+const StrictPreviewDiv = styled.div<{ config: DivConfig }>`
+  width: ${props => `calc(${(props.config.cols / 12) * 100}% - 10px)`};
   height: ${props => props.config.height};
   background-color: ${props => props.config.backgroundColor};
   border-style: ${props => props.config.borderStyle};
   border-color: ${props => props.config.borderColor};
   border-width: ${props => props.config.borderWidth};
   border-radius: ${props => props.config.borderRadius};
-  padding: ${props => props.config.padding || '0'};
-  margin: ${props => props.config.margin || '0'};
-  display: inline-flex;
+  padding: ${props => props.config.padding};
+  margin: ${props => props.config.margin};
+  display: inline-block;
   position: relative;
-  box-sizing: border-box;
   min-height: 50px;
-  flex-shrink: 0;
+  vertical-align: top;
+  box-sizing: border-box;
+  overflow: ${props => props.children ? 'auto' : 'visible'};
+  box-shadow: ${props => 
+    props.config.boxShadow === 'custom' 
+      ? `${props.config.shadowOffsetX}px ${props.config.shadowOffsetY}px ${props.config.shadowBlur}px ${props.config.shadowSpread}px ${props.config.shadowColor}`
+      : 'none'
+  };
 `;
 
 const PropertyPanelContainer = styled.div`
@@ -96,9 +101,10 @@ const PropertyPanelContainer = styled.div`
   position: sticky;
   top: 0;
   height: 100vh;
+  overflow: hidden;
   background-color: #f5f5f5;
   z-index: 10;
-  box-sizing: border-box;
+    box-sizing: border-box;
   
   > * {
     height: auto;
@@ -119,9 +125,12 @@ const PropertyPanelContainer = styled.div`
 
 const renderPreviewComponent = (component: DivComponent) => {
   return (
-    <PreviewDiv key={component.id} config={component.config}>
+    <StrictPreviewDiv 
+      key={component.id} 
+      config={component.config}
+    >
       {component.children?.map(child => renderPreviewComponent(child))}
-    </PreviewDiv>
+    </StrictPreviewDiv>
   );
 };
 
@@ -435,10 +444,10 @@ function App() {
         return (
           <div style={{ 
             padding: '20px',
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            width: '100%'
+            width: '100%',
+            height: '100%',
+            textAlign: 'left',
+            fontSize: 0,
           }}>
             {components.map(comp => renderPreviewComponent(comp))}
           </div>

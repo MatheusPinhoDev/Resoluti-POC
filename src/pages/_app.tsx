@@ -33,7 +33,7 @@ const SidebarWrapper = styled.div`
   overflow: hidden;
   background-color: #f5f5f5;
   z-index: 10;
-    box-sizing: border-box;
+  box-sizing: border-box;
   display: flex;
   flex-direction: column;
 
@@ -104,7 +104,7 @@ const PropertyPanelContainer = styled.div`
   overflow: hidden;
   background-color: #f5f5f5;
   z-index: 10;
-    box-sizing: border-box;
+  box-sizing: border-box;
   
   > * {
     height: auto;
@@ -171,12 +171,14 @@ const calculateRequiredSpace = (children: DivComponent[]) => {
   };
 };
 
+const generateUniqueId = () => `div-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+
 function App() {
   const [activeView, setActiveView] = useState('designer');
   const [selectedComponent, setSelectedComponent] = useState<string | null>(null);
   const [isClient, setIsClient] = useState(false);
   const [divConfigs, setDivConfigs] = useState<DivConfig>({
-    cols: 6,
+    cols: 12,
     height: '30%',
     backgroundColor: '#d1d1d1',
     borderStyle: 'none',
@@ -218,7 +220,36 @@ function App() {
     setCurrentIndex(newHistory.length - 1);
   };
 
-  
+  const handleDuplicate = () => {
+    if (selectedDivId) {
+      const duplicateComponent = (components: DivComponent[]): DivComponent[] => {
+        return components.map(comp => {
+          if (comp.id === selectedDivId) {
+            const deepDuplicate = (component: DivComponent): DivComponent => ({
+              ...component,
+              id: generateUniqueId(),
+              config: { ...component.config },
+              children: component.children?.map(child => deepDuplicate(child)) || []
+            });
+            return [comp, deepDuplicate(comp)];
+          }
+          if (comp.children) {
+            const newChildren = duplicateComponent(comp.children);
+            if (Array.isArray(newChildren[0])) {
+              return { ...comp, children: newChildren.flat() };
+            }
+          }
+          return comp;
+        }).flat();
+      };
+
+      setComponents(prev => {
+        const newComponents = duplicateComponent(prev);
+        addToHistory(newComponents);
+        return newComponents;
+      });
+    }
+  };
 
   const handleDrop = (e: React.DragEvent, parentId?: string) => {
     e.preventDefault();
@@ -231,8 +262,8 @@ function App() {
         id: `div-${Date.now()}`,
         config: {
           ...divConfigs,
-          cols: 6,
-          height: parentId ? '100%' : '200px',
+          cols: 12,
+          height: parentId ? '30%' : '30%',
           backgroundColor: '#e0e0e0',
           padding: '10px',
           margin: '5px',
@@ -475,6 +506,8 @@ function App() {
         onUndo={handleUndo}
         onRedo={handleRedo}
         onClear={handleClear}
+        onDuplicate={handleDuplicate}
+        selectedDivId={selectedDivId}
       />
       <MainContent>
         {activeView !== 'preview' && (

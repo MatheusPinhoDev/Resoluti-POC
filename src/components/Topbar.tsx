@@ -1,6 +1,7 @@
 import { FC } from 'react';
-import { FaPaintBrush, FaEye, FaCode, FaUndo, FaRedo, FaEraser } from 'react-icons/fa';
+import { FaPaintBrush, FaEye, FaCode, FaUndo, FaRedo, FaEraser, FaCopy } from 'react-icons/fa';
 import { TopBarContainer, NavButton } from './TopBar.styles';
+import { DivComponent } from './DivContainer';
 
 interface TopBarProps {
   activeView: string;
@@ -8,9 +9,19 @@ interface TopBarProps {
   onUndo: () => void;
   onRedo: () => void;
   onClear: () => void;
+  onDuplicate: () => void;
+  selectedDivId: string | null;
 }
 
-const TopBar: FC<TopBarProps> = ({ activeView, onViewChange, onUndo, onRedo, onClear }) => {
+const TopBar: FC<TopBarProps> = ({ 
+  activeView, 
+  onViewChange, 
+  onUndo, 
+  onRedo, 
+  onClear,
+  onDuplicate,
+  selectedDivId 
+}) => {
   return (
     <TopBarContainer>
       <div>
@@ -40,6 +51,13 @@ const TopBar: FC<TopBarProps> = ({ activeView, onViewChange, onUndo, onRedo, onC
       </div>
 
       <div>
+      <NavButton 
+          onClick={onDuplicate}
+          disabled={!selectedDivId}
+          style={{ opacity: selectedDivId ? 1 : 0.5 }}
+        >
+          <FaCopy />
+        </NavButton>
         <NavButton onClick={onUndo}>
           <FaUndo />
         </NavButton>

@@ -53,6 +53,7 @@ interface PropertyPanelProps {
   titleConfig?: TitleConfig;
   onConfigUpdate: (config: DivConfig) => void;
   onTitleConfigUpdate?: (config: TitleConfig) => void;
+  onSetDefaultConfig?: (config: DivConfig) => void;
 }
 
 interface SpacingValues {
@@ -79,7 +80,8 @@ const PropertyPanel: FC<PropertyPanelProps> = ({
   divConfig,
   titleConfig,
   onConfigUpdate,
-  onTitleConfigUpdate
+  onTitleConfigUpdate,
+  onSetDefaultConfig
 }) => {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [collapsedSections, setCollapsedSections] = useState<Record<string, boolean>>({
@@ -299,13 +301,33 @@ const PropertyPanel: FC<PropertyPanelProps> = ({
         style={{ width: '40px', fontSize: '12px', textAlign: 'center' }}
         min="0"
       />
-      <div style={{ 
-        border: '1px solid #ddd',
-        height: '40px',
-        width: '40px',
-        margin: '0 auto',
-        backgroundColor: '#f5f5f5'
-      }} />
+      <PropertyInput
+        type="number"
+        onChange={(e) => {
+          const value = e.target.value;
+          const newValues = {
+            top: value,
+            right: value,
+            bottom: value,
+            left: value
+          };
+          setBorderValues(newValues);
+          
+          const borderString = `${value}px ${value}px ${value}px ${value}px`;
+          onConfigUpdate({
+            ...divConfig,
+            borderWidth: borderString
+          });
+        }}
+        style={{ 
+          width: '40px', 
+          fontSize: '12px', 
+          textAlign: 'center',
+          backgroundColor: '#ffffff',
+          border: '1px solid #ccc'
+        }}
+        min="0"
+      />
       <PropertyInput
         type="number"
         value={borderValues.right}
@@ -648,12 +670,42 @@ const PropertyPanel: FC<PropertyPanelProps> = ({
     }
   };
 
+  const renderDefaultConfigCheckbox = () => (
+    <div style={{ 
+      padding: '10px', 
+      marginTop: '20px',
+      borderTop: '1px solid #ddd'
+    }}>
+      <label style={{ 
+        display: 'flex', 
+        alignItems: 'center',
+        gap: '8px',
+        cursor: 'pointer'
+      }}>
+        <input 
+          type="checkbox"
+          onChange={(e) => {
+            if (e.target.checked && onSetDefaultConfig) {
+              onSetDefaultConfig(divConfig);
+            }
+          }}
+        />
+        <span>Definir como configuração padrão</span>
+      </label>
+    </div>
+  );
+
   return (
     <PanelContainer isCollapsed={isCollapsed}>
       <CollapseButton isCollapsed={isCollapsed} onClick={() => setIsCollapsed(!isCollapsed)}>
         {isCollapsed ? <FaChevronLeft /> : <FaChevronRight />}
       </CollapseButton>
-      {!isCollapsed && renderProperties()}
+      {!isCollapsed && (
+        <>
+          {renderProperties()}
+          {selectedComponent === 'div' && renderDefaultConfigCheckbox()}
+        </>
+      )}
     </PanelContainer>
   );
 };

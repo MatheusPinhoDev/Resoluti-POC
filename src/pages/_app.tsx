@@ -200,9 +200,17 @@ function App() {
   const [selectedDivId, setSelectedDivId] = useState<string | null>(null);
   const [history, setHistory] = useState<DivComponent[][]>([[]]);
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [defaultDivConfig, setDefaultDivConfig] = useState<DivConfig>(divConfigs);
 
   useEffect(() => {
     setIsClient(true);
+  }, []);
+
+  useEffect(() => {
+    const savedConfig = localStorage.getItem('defaultDivConfig');
+    if (savedConfig) {
+      setDefaultDivConfig(JSON.parse(savedConfig));
+    }
   }, []);
 
   const handleComponentSelect = (component: string) => {
@@ -261,18 +269,14 @@ function App() {
       const newDiv: DivComponent = {
         id: `div-${Date.now()}`,
         config: {
-          ...divConfigs,
+          ...defaultDivConfig,
           cols: 12,
           height: '30%',
-          backgroundColor: '#ffffff',
-          padding: '10px',
-          margin: '5px',
         },
         children: []
       };
 
       setComponents(prev => {
-        // Para drops na área principal (divs pais)
         if (!parentId) {
           let insertIndex = prev.length;
           const containers = document.querySelectorAll(`#designer-area > [id^="div-"]`);
@@ -291,7 +295,6 @@ function App() {
           return newComponents;
         }
 
-        // Para drops dentro de divs existentes (divs filhas)
         const updateComponents = (components: DivComponent[]): DivComponent[] => {
           return components.map(comp => {
             if (comp.id === parentId) {
@@ -307,11 +310,9 @@ function App() {
                 }
               }
 
-              // Calcula o novo número de colunas para cada div filha
               const totalChildren = children.length + 1;
               const colsPerChild = Math.floor(12 / totalChildren);
               
-              // Atualiza as colunas de todas as divs filhas
               const updatedChildren = children.map(child => ({
                 ...child,
                 config: {
@@ -319,15 +320,13 @@ function App() {
                   cols: colsPerChild
                 }
               }));
-
-              // Adiciona a nova div com o mesmo número de colunas
+              
               const newChildDiv = {
                 ...newDiv,
                 config: {
                   ...newDiv.config,
                   cols: colsPerChild,
                   height: '30%',
-                  backgroundColor: '#ffffff',
                 }
               };
 
@@ -450,6 +449,11 @@ function App() {
     }
   };
 
+  const handleSetDefaultConfig = (config: DivConfig) => {
+    setDefaultDivConfig(config);
+    localStorage.setItem('defaultDivConfig', JSON.stringify(config));
+  };
+
   const renderContent = () => {
     switch (activeView) {
       case 'designer':
@@ -531,6 +535,7 @@ function App() {
               selectedComponent={selectedComponent}
               divConfig={divConfigs}
               onConfigUpdate={setDivConfigs}
+              onSetDefaultConfig={handleSetDefaultConfig}
             />
           </PropertyPanelContainer>
         )}

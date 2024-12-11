@@ -264,7 +264,7 @@ function App() {
           ...divConfigs,
           cols: 12,
           height: '30%',
-          backgroundColor: '#e0e0e0',
+          backgroundColor: '#ffffff',
           padding: '10px',
           margin: '5px',
         },
@@ -327,6 +327,7 @@ function App() {
                   ...newDiv.config,
                   cols: colsPerChild,
                   height: '30%',
+                  backgroundColor: '#ffffff',
                 }
               };
 

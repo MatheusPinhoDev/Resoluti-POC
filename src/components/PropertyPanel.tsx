@@ -387,13 +387,20 @@ const PropertyPanel: FC<PropertyPanelProps> = ({
                 <PropertySelect
                   value={divConfig.boxShadow}
                   onChange={(e) => {
-                    handleConfigChange('boxShadow', e.target.value);
-                    if (e.target.value === 'none') {
-                      handleConfigChange('shadowColor', '#000000');
-                      handleConfigChange('shadowBlur', '0');
-                      handleConfigChange('shadowSpread', '0');
-                      handleConfigChange('shadowOffsetX', '0');
-                      handleConfigChange('shadowOffsetY', '0');
+                    const newValue = e.target.value;
+                    
+                    if (newValue === 'none') {
+                      onConfigUpdate({
+                        ...divConfig,
+                        boxShadow: 'none',
+                        shadowOffsetX: '',
+                        shadowOffsetY: '',
+                        shadowBlur: '',
+                        shadowSpread: '',
+                        shadowColor: ''
+                      });
+                    } else {
+                      handleConfigChange('boxShadow', newValue);
                     }
                   }}
                 >
@@ -453,7 +460,17 @@ const PropertyPanel: FC<PropertyPanelProps> = ({
                 <PropertyLabel>Estilo da Borda</PropertyLabel>
                 <PropertySelect
                   value={divConfig.borderStyle}
-                  onChange={(e) => handleConfigChange('borderStyle', e.target.value)}
+                  onChange={(e) => {
+                    const newValue = e.target.value;
+                    onConfigUpdate({
+                      ...divConfig,
+                      borderStyle: newValue,
+                      ...(newValue === 'none' ? {
+                        borderWidth: '0px 0px 0px 0px',
+                        borderColor: '',
+                      } : {})
+                    });
+                  }}
                 >
                   <option value="none">Nenhuma</option>
                   <option value="solid">Sólida</option>
@@ -466,7 +483,13 @@ const PropertyPanel: FC<PropertyPanelProps> = ({
                 <PropertyInput 
                   type="color" 
                   value={divConfig.borderColor}
-                  onChange={(e) => handleConfigChange('borderColor', e.target.value)}
+                  onChange={(e) => {
+                    onConfigUpdate({
+                      ...divConfig,
+                      borderColor: e.target.value,
+                      borderStyle: divConfig.borderStyle === 'none' ? 'solid' : divConfig.borderStyle
+                    });
+                  }}
                 />
 
                 <PropertyLabel>Espessura da Borda</PropertyLabel>
